@@ -5,12 +5,17 @@ from .models import (
     MemoryType,
     Project,
 )
-from .repository import InMemoryRepository, MemoryRepository
+from .relationships import (
+    MemoryRelation,
+    MemoryRelationType,
+)
+from .repository import InMemoryRepository
 
 __all__ = [
     "InMemoryRepository",
     "MemoryRecord",
-    "MemoryRepository",
+    "MemoryRelation",
+    "MemoryRelationType",
     "MemorySource",
     "MemoryStatus",
     "MemoryType",
