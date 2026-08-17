@@ -111,3 +111,96 @@ def test_extra_fields_are_rejected():
             source=MemorySource.USER,
             unknown_field="should fail",
         )
+
+
+
+def test_valid_temporal_interval_is_accepted():
+    start = datetime(2026, 8, 10, 12, 0, tzinfo=UTC)
+    end = datetime(2026, 8, 17, 12, 0, tzinfo=UTC)
+
+    memory = MemoryRecord(
+        memory_type=MemoryType.FACT,
+        content="A fact with a valid temporal interval.",
+        source=MemorySource.USER,
+        valid_from=start,
+        valid_until=end,
+    )
+
+    assert memory.valid_from == start
+    assert memory.valid_until == end
+
+
+def test_open_ended_temporal_interval_is_accepted():
+    start = datetime(2026, 8, 10, 12, 0, tzinfo=UTC)
+
+    memory = MemoryRecord(
+        memory_type=MemoryType.FACT,
+        content="A currently valid fact.",
+        source=MemorySource.USER,
+        valid_from=start,
+    )
+
+    assert memory.valid_from == start
+    assert memory.valid_until is None
+
+
+def test_temporal_interval_with_equal_bounds_is_accepted():
+    timestamp = datetime(2026, 8, 10, 12, 0, tzinfo=UTC)
+
+    memory = MemoryRecord(
+        memory_type=MemoryType.EVENT,
+        content="A point-in-time event.",
+        source=MemorySource.SYSTEM,
+        valid_from=timestamp,
+        valid_until=timestamp,
+    )
+
+    assert memory.valid_from == timestamp
+    assert memory.valid_until == timestamp
+
+
+def test_invalid_temporal_interval_is_rejected():
+    start = datetime(2026, 8, 17, 12, 0, tzinfo=UTC)
+    end = datetime(2026, 8, 10, 12, 0, tzinfo=UTC)
+
+    with pytest.raises(
+        ValidationError,
+        match="valid_until cannot be earlier than valid_from",
+    ):
+        MemoryRecord(
+            memory_type=MemoryType.FACT,
+            content="Invalid temporal interval.",
+            source=MemorySource.USER,
+            valid_from=start,
+            valid_until=end,
+        )
+
+
+def test_naive_valid_from_is_rejected():
+    naive_timestamp = datetime(2026, 8, 10, 12, 0)  # noqa: DTZ001
+
+    with pytest.raises(
+        ValidationError,
+        match="Datetime must be timezone-aware",
+    ):
+        MemoryRecord(
+            memory_type=MemoryType.FACT,
+            content="Naive valid_from test.",
+            source=MemorySource.USER,
+            valid_from=naive_timestamp,
+        )
+
+
+def test_naive_valid_until_is_rejected():
+    naive_timestamp = datetime(2026, 8, 10, 12, 0)  # noqa: DTZ001
+
+    with pytest.raises(
+        ValidationError,
+        match="Datetime must be timezone-aware",
+    ):
+        MemoryRecord(
+            memory_type=MemoryType.FACT,
+            content="Naive valid_until test.",
+            source=MemorySource.USER,
+            valid_until=naive_timestamp,
+        )

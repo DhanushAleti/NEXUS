@@ -5,7 +5,13 @@ from enum import Enum
 from typing import Any
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 class MemoryType(str, Enum):
@@ -60,6 +66,9 @@ class MemoryRecord(BaseModel):
 
     observed_at: datetime | None = None
 
+    valid_from: datetime | None = None
+    valid_until: datetime | None = None
+
     source: MemorySource
     source_ref: str | None = None
 
@@ -84,6 +93,34 @@ class MemoryRecord(BaseModel):
             raise ValueError("Memory content cannot be blank.")
 
         return value.strip()
+
+    @field_validator("created_at", "observed_at", "valid_from", "valid_until")
+    @classmethod
+    def datetime_must_be_timezone_aware(
+        cls,
+        value: datetime | None,
+    ) -> datetime | None:
+        """Reject naive datetimes."""
+
+        if value is not None and value.tzinfo is None:
+            raise ValueError("Datetime must be timezone-aware.")
+
+        return value
+
+    @model_validator(mode="after")
+    def validate_temporal_bounds(self) -> MemoryRecord:
+        """Ensure valid_until is not earlier than valid_from."""
+
+        if (
+            self.valid_from is not None
+            and self.valid_until is not None
+            and self.valid_until < self.valid_from
+        ):
+            raise ValueError(
+                "valid_until cannot be earlier than valid_from."
+            )
+
+        return self
 
     @field_validator("tags")
     @classmethod
