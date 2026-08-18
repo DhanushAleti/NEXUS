@@ -59,8 +59,7 @@ class RepositoryRetrievalEngine(RetrievalEngine):
 
         ranked = sorted(
             relevant,
-            key=lambda result: result.score,
-            reverse=True,
+            key=lambda result: (-result.score, str(result.memory.id)),
         )
 
         return ranked[: query.limit]
