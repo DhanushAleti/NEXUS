@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from nexus.memory.repository import MemoryRepository
 
 from .models import RetrievalQuery, RetrievalResult
+from .scoring import lexical_relevance_score
 
 
 class RetrievalEngine(ABC):
@@ -22,11 +23,7 @@ class RetrievalEngine(ABC):
 
 
 class RepositoryRetrievalEngine(RetrievalEngine):
-    """Retrieve memory candidates from a memory repository.
-
-    Repository filtering remains the responsibility of the memory repository.
-    Relevance scoring and ranking are intentionally deferred to later layers.
-    """
+    """Retrieve, score, and rank memories from a memory repository."""
 
     def __init__(self, repository: MemoryRepository) -> None:
         self._repository = repository
@@ -35,7 +32,7 @@ class RepositoryRetrievalEngine(RetrievalEngine):
         self,
         query: RetrievalQuery,
     ) -> list[RetrievalResult]:
-        """Retrieve repository candidates matching query constraints."""
+        """Retrieve memories, rank them by relevance, and apply the limit."""
 
         memories = self._repository.list(
             memory_type=query.memory_type,
@@ -43,10 +40,21 @@ class RepositoryRetrievalEngine(RetrievalEngine):
             project_id=query.project_id,
         )
 
-        return [
+        results = [
             RetrievalResult(
                 memory=memory,
-                score=0.0,
+                score=lexical_relevance_score(
+                    query.text,
+                    memory,
+                ),
             )
-            for memory in memories[: query.limit]
+            for memory in memories
         ]
+
+        ranked = sorted(
+            results,
+            key=lambda result: result.score,
+            reverse=True,
+        )
+
+        return ranked[: query.limit]
