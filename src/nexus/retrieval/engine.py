@@ -32,7 +32,7 @@ class RepositoryRetrievalEngine(RetrievalEngine):
         self,
         query: RetrievalQuery,
     ) -> list[RetrievalResult]:
-        """Retrieve memories, rank them by relevance, and apply the limit."""
+        """Retrieve, score, rank, and limit relevant memories."""
 
         memories = self._repository.list(
             memory_type=query.memory_type,
@@ -51,8 +51,14 @@ class RepositoryRetrievalEngine(RetrievalEngine):
             for memory in memories
         ]
 
+        relevant = [
+            result
+            for result in results
+            if result.score > 0.0
+        ]
+
         ranked = sorted(
-            results,
+            relevant,
             key=lambda result: result.score,
             reverse=True,
         )
