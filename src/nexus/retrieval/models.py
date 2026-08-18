@@ -1,3 +1,5 @@
+"""Pydantic models for the retrieval domain."""
+
 from __future__ import annotations
 
 from uuid import UUID
@@ -8,7 +10,7 @@ from nexus.memory import MemoryRecord, MemoryStatus, MemoryType
 
 
 class RetrievalQuery(BaseModel):
-    """Immutable specification of a retrieval request."""
+    """A validated query submitted to the retrieval layer."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -16,11 +18,11 @@ class RetrievalQuery(BaseModel):
     project_id: UUID | None = None
     memory_type: MemoryType | None = None
     status: MemoryStatus | None = None
-    limit: int = Field(default=10, ge=1)
+    limit: int = Field(default=10, gt=0)
 
     @field_validator("text")
     @classmethod
-    def normalize_text(cls, value: str) -> str:
+    def validate_text(cls, value: str) -> str:
         value = value.strip()
 
         if not value:
@@ -30,7 +32,7 @@ class RetrievalQuery(BaseModel):
 
 
 class RetrievalResult(BaseModel):
-    """A memory returned by a retrieval engine with its relevance score."""
+    """A memory returned by retrieval together with its relevance score."""
 
     model_config = ConfigDict(extra="forbid")
 

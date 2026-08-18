@@ -1,3 +1,5 @@
+"""Retrieval domain."""
+
 from .engine import RetrievalEngine
 from .models import RetrievalQuery, RetrievalResult
 
