@@ -107,4 +107,5 @@ def test_limit_is_applied_after_zero_score_filtering() -> None:
     )
 
     assert len(results) == 1
-    assert results[0].memory.id == second.id
+    expected = min(first.id, second.id, key=str)
+    assert results[0].memory.id == expected

@@ -37,16 +37,18 @@ def test_repository_engine_retrieves_memories() -> None:
 
     results = engine.retrieve(RetrievalQuery(text="memory"))
 
-    assert [result.memory.id for result in results] == [
-        first.id,
-        second.id,
-    ]
+    expected = sorted(
+        [first.id, second.id],
+        key=str,
+    )
+
+    assert [result.memory.id for result in results] == expected
 
 
 def test_repository_engine_respects_limit() -> None:
     repository = InMemoryRepository()
     first = repository.create(make_memory("First memory."))
-    repository.create(make_memory("Second memory."))
+    second = repository.create(make_memory("Second memory."))
 
     engine = RepositoryRetrievalEngine(repository)
 
@@ -57,7 +59,8 @@ def test_repository_engine_respects_limit() -> None:
         )
     )
 
-    assert [result.memory.id for result in results] == [second.id]
+    expected = min(first.id, second.id, key=str)
+    assert [result.memory.id for result in results] == [expected]
 
 
 def test_repository_engine_passes_memory_type_filter() -> None:

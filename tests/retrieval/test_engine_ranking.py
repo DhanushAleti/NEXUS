@@ -84,7 +84,7 @@ def test_engine_applies_limit_after_ranking() -> None:
     ]
 
 
-def test_engine_preserves_insertion_order_for_equal_scores() -> None:
+def test_engine_orders_equal_scores_deterministically() -> None:
     repository = InMemoryRepository()
 
     first = repository.create(
@@ -102,10 +102,12 @@ def test_engine_preserves_insertion_order_for_equal_scores() -> None:
         )
     )
 
-    assert [result.memory.id for result in results] == [
-        first.id,
-        second.id,
-    ]
+    expected = sorted(
+        [first.id, second.id],
+        key=str,
+    )
+
+    assert [result.memory.id for result in results] == expected
 
 
 def test_engine_returns_zero_score_for_non_matching_memory() -> None:
