@@ -123,6 +123,4 @@ def test_engine_returns_zero_score_for_non_matching_memory() -> None:
         )
     )
 
-    assert len(results) == 1
-    assert results[0].memory.id == memory.id
-    assert results[0].score == 0.0
+    assert results == []

@@ -107,5 +107,4 @@ def test_limit_is_applied_after_zero_score_filtering() -> None:
     )
 
     assert len(results) == 1
-    assert results[0].memory.id == first.id
-    assert results[0].memory.id != second.id
+    assert results[0].memory.id == second.id

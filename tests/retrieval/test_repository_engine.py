@@ -57,7 +57,7 @@ def test_repository_engine_respects_limit() -> None:
         )
     )
 
-    assert [result.memory.id for result in results] == [first.id]
+    assert [result.memory.id for result in results] == [second.id]
 
 
 def test_repository_engine_passes_memory_type_filter() -> None:
@@ -80,7 +80,7 @@ def test_repository_engine_passes_memory_type_filter() -> None:
 
     results = engine.retrieve(
         RetrievalQuery(
-            text="memory",
+            text="fact",
             memory_type=MemoryType.FACT,
         )
     )
@@ -146,21 +146,21 @@ def test_repository_engine_passes_project_filter() -> None:
     assert [result.memory.id for result in results] == [project_memory.id]
 
 
-def test_repository_engine_preserves_repository_order() -> None:
+def test_repository_engine_ranks_relevant_memories_deterministically() -> None:
     repository = InMemoryRepository()
 
-    first = repository.create(make_memory("First."))
-    second = repository.create(make_memory("Second."))
-    third = repository.create(make_memory("Third."))
+    low = repository.create(make_memory("Python."))
+    high = repository.create(make_memory("Python PostgreSQL."))
 
     engine = RepositoryRetrievalEngine(repository)
 
-    results = engine.retrieve(RetrievalQuery(text="anything"))
+    results = engine.retrieve(
+        RetrievalQuery(text="Python PostgreSQL")
+    )
 
     assert [result.memory.id for result in results] == [
-        first.id,
-        second.id,
-        third.id,
+        high.id,
+        low.id,
     ]
 
 
@@ -173,4 +173,4 @@ def test_repository_engine_initial_score_is_neutral() -> None:
     results = engine.retrieve(RetrievalQuery(text="memory"))
 
     assert len(results) == 1
-    assert results[0].score == 0.0
+    assert results[0].score == 1.0
