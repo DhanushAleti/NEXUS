@@ -37,7 +37,7 @@ class MemoryRelationRepository(ABC):
         raise NotImplementedError
 
 
-class InMemoryMemoryRelationRepository(MemoryRelationRepository):
+class InMemoryRelationRepository(MemoryRelationRepository):
     """In-memory relationship repository with explicit mutation boundaries."""
 
     def __init__(self) -> None:

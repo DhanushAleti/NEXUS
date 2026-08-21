@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 import pytest
 
 from nexus.memory.relationship_repository import (
-    InMemoryMemoryRelationRepository,
+    InMemoryRelationRepository,
 )
 from nexus.memory.relationships import MemoryRelation, MemoryRelationType
 
@@ -31,7 +31,7 @@ def make_relation(
 
 
 def test_create_and_get_relationship():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
     relation = make_relation()
 
     created = repository.create(relation)
@@ -42,7 +42,7 @@ def test_create_and_get_relationship():
 
 
 def test_duplicate_relationship_id_is_rejected():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
     relation = make_relation()
 
     repository.create(relation)
@@ -55,13 +55,13 @@ def test_duplicate_relationship_id_is_rejected():
 
 
 def test_get_missing_relationship_returns_none():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
 
     assert repository.get(uuid4()) is None
 
 
 def test_delete_removes_relationship():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
     relation = make_relation()
 
     repository.create(relation)
@@ -72,7 +72,7 @@ def test_delete_removes_relationship():
 
 
 def test_delete_missing_relationship_is_rejected():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
 
     with pytest.raises(
         KeyError,
@@ -82,7 +82,7 @@ def test_delete_missing_relationship_is_rejected():
 
 
 def test_create_does_not_expose_internal_state():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
     relation = make_relation()
 
     repository.create(relation)
@@ -96,7 +96,7 @@ def test_create_does_not_expose_internal_state():
 
 
 def test_get_returns_isolated_relationship_copy():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
     relation = make_relation()
 
     repository.create(relation)
@@ -114,7 +114,7 @@ def test_get_returns_isolated_relationship_copy():
 
 
 def test_list_returns_isolated_relationship_copies():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
     relation = make_relation()
 
     repository.create(relation)
@@ -132,7 +132,7 @@ def test_list_returns_isolated_relationship_copies():
 
 
 def test_list_preserves_insertion_order():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
 
     first = make_relation()
     second = make_relation()
@@ -152,7 +152,7 @@ def test_list_preserves_insertion_order():
 
 
 def test_list_filters_by_relation_type():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
 
     related = make_relation(
         MemoryRelationType.RELATED_TO,
@@ -176,7 +176,7 @@ def test_list_filters_by_relation_type():
 
 
 def test_list_filters_by_source_memory_id():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
 
     source_id = uuid4()
 
@@ -196,7 +196,7 @@ def test_list_filters_by_source_memory_id():
 
 
 def test_list_filters_by_target_memory_id():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
 
     target_id = uuid4()
 
@@ -216,7 +216,7 @@ def test_list_filters_by_target_memory_id():
 
 
 def test_list_combines_filters_with_and_semantics():
-    repository = InMemoryMemoryRelationRepository()
+    repository = InMemoryRelationRepository()
 
     source_id = uuid4()
     target_id = uuid4()
