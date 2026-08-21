@@ -1,3 +1,5 @@
+"""Storage contracts and in-memory implementation for memory relationships."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -13,12 +15,10 @@ class MemoryRelationRepository(ABC):
     @abstractmethod
     def create(self, relation: MemoryRelation) -> MemoryRelation:
         """Store a new relationship and return a copy of it."""
-        raise NotImplementedError
 
     @abstractmethod
     def get(self, relation_id: UUID) -> MemoryRelation | None:
         """Return a copy of a relationship by ID, or None if absent."""
-        raise NotImplementedError
 
     @abstractmethod
     def list(
@@ -28,23 +28,28 @@ class MemoryRelationRepository(ABC):
         source_memory_id: UUID | None = None,
         target_memory_id: UUID | None = None,
     ) -> list[MemoryRelation]:
-        """Return copies matching all supplied filters."""
-        raise NotImplementedError
+        """Return copies matching all supplied filters, in insertion order."""
 
     @abstractmethod
     def delete(self, relation_id: UUID) -> None:
         """Permanently delete a relationship."""
-        raise NotImplementedError
 
 
 class InMemoryRelationRepository(MemoryRelationRepository):
-    """In-memory relationship repository with explicit mutation boundaries."""
+    """In-memory relationship repository with explicit mutation boundaries.
+
+    Relationships are identified solely by their ``id``. Two relations sharing
+    the same source, target, and type but different ids are treated as distinct
+    (logical duplicates are permitted). Referential integrity against a
+    ``MemoryRepository`` is intentionally not enforced here; endpoint existence
+    is the caller's responsibility (see ARCHITECTURE.md).
+    """
 
     def __init__(self) -> None:
         self._relations: dict[UUID, MemoryRelation] = {}
 
     def create(self, relation: MemoryRelation) -> MemoryRelation:
-        """Store a new relationship."""
+        """Store a new relationship, rejecting a duplicate id."""
         if relation.id in self._relations:
             raise ValueError(f"Relationship already exists: {relation.id}")
 
@@ -67,7 +72,11 @@ class InMemoryRelationRepository(MemoryRelationRepository):
         source_memory_id: UUID | None = None,
         target_memory_id: UUID | None = None,
     ) -> list[MemoryRelation]:
-        """Return isolated copies matching all supplied filters."""
+        """Return isolated copies matching all supplied filters.
+
+        Results are returned in insertion order. Filters combine with AND
+        semantics; omitted filters do not constrain the result.
+        """
         relations = list(self._relations.values())
 
         if relation_type is not None:
@@ -94,7 +103,7 @@ class InMemoryRelationRepository(MemoryRelationRepository):
         return deepcopy(relations)
 
     def delete(self, relation_id: UUID) -> None:
-        """Permanently delete a relationship."""
+        """Permanently delete a relationship, raising if it is absent."""
         if relation_id not in self._relations:
             raise KeyError(f"Relationship not found: {relation_id}")
 

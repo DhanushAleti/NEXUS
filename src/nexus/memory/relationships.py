@@ -1,3 +1,5 @@
+"""Directed relationship model connecting two NEXUS memory records."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime

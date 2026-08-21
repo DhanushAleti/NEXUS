@@ -1,3 +1,5 @@
+"""Storage contracts and in-memory implementation for memory records."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -26,7 +28,7 @@ class MemoryRepository(ABC):
         status: MemoryStatus | None = None,
         project_id: UUID | None = None,
     ) -> list[MemoryRecord]:
-        """Return copies of memories matching the supplied filters."""
+        """Return copies of memories matching the filters, in insertion order."""
 
     @abstractmethod
     def update(self, memory: MemoryRecord) -> MemoryRecord:
@@ -42,7 +44,13 @@ class MemoryRepository(ABC):
 
 
 class InMemoryRepository(MemoryRepository):
-    """In-memory repository with explicit mutation boundaries."""
+    """In-memory repository with explicit mutation boundaries.
+
+    Records are stored and returned as deep copies, so neither the record
+    passed to ``create``/``update`` nor any record returned by ``get``/``list``
+    shares mutable state with repository internals. ``list`` preserves insertion
+    order, giving deterministic, reproducible results.
+    """
 
     def __init__(self) -> None:
         self._memories: dict[UUID, MemoryRecord] = {}

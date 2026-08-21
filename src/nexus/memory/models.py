@@ -1,3 +1,5 @@
+"""Core NEXUS domain models: memory records, their enums, and projects."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime

@@ -5,6 +5,7 @@ import pytest
 from nexus.memory import (
     InMemoryRepository,
     MemoryRecord,
+    MemoryRepository,
     MemorySource,
     MemoryStatus,
     MemoryType,
@@ -23,6 +24,11 @@ def make_memory(
         source=MemorySource.USER,
         project_id=project_id,
     )
+
+
+def test_abstract_repository_cannot_be_instantiated():
+    with pytest.raises(TypeError):
+        MemoryRepository()  # type: ignore[abstract]
 
 
 def test_create_and_get_memory():
@@ -234,6 +240,33 @@ def test_create_does_not_expose_internal_state():
     stored = repository.get(memory.id)
 
     assert stored.content == "Original content."
+
+
+def test_nested_mutable_fields_are_isolated():
+    repository = InMemoryRepository()
+
+    memory = make_memory()
+    memory = memory.model_copy(
+        update={"tags": ["alpha"], "metadata": {"nested": {"count": 1}}}
+    )
+    repository.create(memory)
+
+    # Mutate nested containers through the source object and through copies
+    # returned by get() and list(); none may leak into repository state.
+    memory.tags.append("leak")
+    memory.metadata["nested"]["count"] = 999
+
+    fetched = repository.get(memory.id)
+    fetched.tags.append("leak")
+    fetched.metadata["nested"]["count"] = 888
+
+    listed = repository.list()
+    listed[0].metadata["nested"]["count"] = 777
+
+    stored = repository.get(memory.id)
+
+    assert stored.tags == ["alpha"]
+    assert stored.metadata == {"nested": {"count": 1}}
 
 
 def test_update_replaces_repository_state_explicitly():

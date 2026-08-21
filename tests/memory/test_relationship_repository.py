@@ -4,6 +4,7 @@ import pytest
 
 from nexus.memory.relationship_repository import (
     InMemoryRelationRepository,
+    MemoryRelationRepository,
 )
 from nexus.memory.relationships import MemoryRelation, MemoryRelationType
 
@@ -28,6 +29,11 @@ def make_relation(
         source_memory_id=source_id,
         target_memory_id=target_id,
     )
+
+
+def test_abstract_relation_repository_cannot_be_instantiated():
+    with pytest.raises(TypeError):
+        MemoryRelationRepository()  # type: ignore[abstract]
 
 
 def test_create_and_get_relationship():
@@ -148,6 +154,35 @@ def test_list_preserves_insertion_order():
         first.id,
         second.id,
         third.id,
+    ]
+
+
+def test_logical_duplicate_relations_are_allowed():
+    # Relations are identified only by id; two relations with the same source,
+    # target, and type but different ids are distinct by design.
+    repository = InMemoryRelationRepository()
+
+    source_id = uuid4()
+    target_id = uuid4()
+
+    first = make_relation(
+        MemoryRelationType.SUPPORTS,
+        source_memory_id=source_id,
+        target_memory_id=target_id,
+    )
+    second = make_relation(
+        MemoryRelationType.SUPPORTS,
+        source_memory_id=source_id,
+        target_memory_id=target_id,
+    )
+
+    repository.create(first)
+    repository.create(second)
+
+    assert first.id != second.id
+    assert [relation.id for relation in repository.list()] == [
+        first.id,
+        second.id,
     ]
 
 
