@@ -59,7 +59,7 @@ def test_engine_returns_relevance_scores() -> None:
 def test_engine_applies_limit_after_ranking() -> None:
     repository = InMemoryRepository()
 
-    low = repository.create(
+    repository.create(
         make_memory("Python.")
     )
     high = repository.create(
@@ -113,7 +113,7 @@ def test_engine_orders_equal_scores_deterministically() -> None:
 def test_engine_returns_zero_score_for_non_matching_memory() -> None:
     repository = InMemoryRepository()
 
-    memory = repository.create(
+    repository.create(
         make_memory("PostgreSQL database.")
     )
 
