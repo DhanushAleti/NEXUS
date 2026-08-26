@@ -6,7 +6,6 @@ import re
 
 from nexus.memory import MemoryRecord
 
-
 _TOKEN_PATTERN = re.compile(r"[A-Za-z0-9_]+")
 
 
