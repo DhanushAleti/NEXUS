@@ -126,3 +126,25 @@ def test_engine_returns_zero_score_for_non_matching_memory() -> None:
     )
 
     assert results == []
+
+def test_engine_prefers_memory_with_more_matching_tokens() -> None:
+    repository = InMemoryRepository()
+
+    weaker = make_memory("Python programming language.")
+    stronger = make_memory("Python programming language with Python testing.")
+
+    repository.create(weaker)
+    repository.create(stronger)
+
+    engine = RepositoryRetrievalEngine(repository)
+
+    results = engine.retrieve(
+        RetrievalQuery(
+            text="Python testing",
+        )
+    )
+
+    assert [result.memory.id for result in results[:2]] == [
+        stronger.id,
+        weaker.id,
+    ]
