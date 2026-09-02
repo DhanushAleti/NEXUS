@@ -38,3 +38,6 @@
 
 - Verified the project virtual environment uses Python 3.13.6.
 - Confirmed pytest executes correctly from the NEXUS virtual environment.
+
+- Reviewed the current NEXUS retrieval architecture and preserved the deterministic ranking pipeline.
+- Kept the existing retrieval tests and scoring behavior unchanged while maintaining the current baseline.
