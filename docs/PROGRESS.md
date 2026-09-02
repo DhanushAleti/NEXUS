@@ -35,3 +35,6 @@
 
 - Re-ran the NEXUS test suite after the repository checkpoint.
 - Confirmed all 102 tests pass before further changes.
+
+- Verified the project virtual environment uses Python 3.13.6.
+- Confirmed pytest executes correctly from the NEXUS virtual environment.
