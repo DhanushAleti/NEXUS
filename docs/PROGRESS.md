@@ -32,3 +32,6 @@
 
 - Continued validation of the deterministic retrieval engine and its ranking behavior.
 - Preserved the existing retrieval implementation while preparing the next engineering increment.
+
+- Re-ran the NEXUS test suite after the repository checkpoint.
+- Confirmed all 102 tests pass before further changes.
