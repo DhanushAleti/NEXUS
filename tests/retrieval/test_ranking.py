@@ -24,21 +24,18 @@ def test_retrieval_ranks_higher_scores_first() -> None:
         make_memory("Python is a programming language.")
     )
     high = repository.create(
-        make_memory("Python Python Python.")
+        make_memory("Python PostgreSQL are used by NEXUS.")
     )
 
     engine = RepositoryRetrievalEngine(repository)
 
     results = engine.retrieve(
-        RetrievalQuery(text="Python")
+        RetrievalQuery(text="Python PostgreSQL")
     )
 
     assert len(results) == 2
-    assert results[0].score >= results[1].score
-
-    ids = [result.memory.id for result in results]
-
-    assert set(ids) == {low.id, high.id}
+    assert results[0].score > results[1].score
+    assert [result.memory.id for result in results] == [high.id, low.id]
 
 
 def test_equal_scores_have_deterministic_memory_id_order() -> None:
