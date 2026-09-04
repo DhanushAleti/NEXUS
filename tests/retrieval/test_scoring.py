@@ -1,7 +1,11 @@
 """Tests for deterministic retrieval scoring."""
 
 from nexus.memory import MemoryRecord, MemorySource, MemoryType
-from nexus.retrieval.scoring import lexical_relevance_score, tokenize
+from nexus.retrieval.scoring import (
+    explain_lexical_relevance,
+    lexical_relevance_score,
+    tokenize,
+)
 
 
 def make_memory(content: str) -> MemoryRecord:
@@ -76,3 +80,43 @@ def test_lexical_score_returns_zero_for_empty_query() -> None:
     memory = make_memory("NEXUS uses PostgreSQL.")
 
     assert lexical_relevance_score("", memory) == 0.0
+
+
+def test_explain_lexical_relevance_reports_matches_and_missing_tokens() -> None:
+    memory = make_memory("NEXUS uses PostgreSQL for structured memory.")
+
+    explanation = explain_lexical_relevance(
+        "NEXUS PostgreSQL Redis",
+        memory,
+    )
+
+    assert explanation.query_tokens == {
+        "nexus",
+        "postgresql",
+        "redis",
+    }
+    assert explanation.matched_tokens == {
+        "nexus",
+        "postgresql",
+    }
+    assert explanation.missing_tokens == {"redis"}
+    assert explanation.score == 2 / 3
+
+
+def test_explain_lexical_relevance_handles_empty_query() -> None:
+    memory = make_memory("NEXUS uses PostgreSQL.")
+
+    explanation = explain_lexical_relevance("", memory)
+
+    assert explanation.query_tokens == frozenset()
+    assert explanation.matched_tokens == frozenset()
+    assert explanation.missing_tokens == frozenset()
+    assert explanation.score == 0.0
+
+
+def test_lexical_score_remains_compatible_with_explanation() -> None:
+    memory = make_memory("NEXUS uses PostgreSQL for structured memory.")
+
+    explanation = explain_lexical_relevance("NEXUS PostgreSQL", memory)
+
+    assert lexical_relevance_score("NEXUS PostgreSQL", memory) == explanation.score
